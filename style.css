@@ -1,0 +1,14 @@
+div {
+    background-color: red;
+    font-style:white;
+    font-size: 32px;
+    text-align: center,bold;
+    
+}
+
+p,ul,li{
+    background-color: green;
+    color: white;
+    font-size:18px;
+}
+
