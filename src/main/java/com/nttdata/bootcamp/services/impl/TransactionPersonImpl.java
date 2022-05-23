@@ -8,7 +8,6 @@ import com.nttdata.bootcamp.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.nttdata.bootcamp.models.TransactionPerson;
@@ -16,24 +15,22 @@ import com.nttdata.bootcamp.models.products.SavingAccount;
 import com.nttdata.bootcamp.repositories.ITransactionPersonRepo;
 import com.nttdata.bootcamp.services.ITransactionPersonService;
 
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@Slf4j
 @Service
 public class TransactionPersonImpl implements ITransactionPersonService{
 	
 	@Autowired
 	ITransactionPersonRepo tprepo;
 	
-	@Autowired
-	private RestTemplate clientRest;
+	private WebClient customerServiceClient = WebClient.builder()
+		      .baseUrl("http://localhost:8024")
+		      .build();
 	
-	private WebClient customerServiceClient = WebClient.builder().baseUrl("http://localhost:8024").build();
-
 	private Function<Mono<SavingAccount>, Mono<SavingAccount>>
-			updateSavingAccount = (objeto) -> customerServiceClient.patch()
+			updateSavingAccount = (objeto) -> customerServiceClient
+			.patch()
 			.uri("/savingAccount/update")
 			.body(objeto, SavingAccount.class)
 			.retrieve()
@@ -71,9 +68,19 @@ public class TransactionPersonImpl implements ITransactionPersonService{
 					return Mono.just(p);
 				});
 		
+		/*webClientBuilder.build()
+		.patch()
+		.uri("http://service-product-savingaccount/savingAccount/update")
+		.accept(MediaType.APPLICATION_JSON)
+		.body(savingAccount, SavingAccount.class)
+		.retrieve()
+		.bodyToMono(SavingAccount.class);*/
+		
+		//return tprepo.save(transactionPerson);
 		return updateSavingAccount.apply(savingAccount).flatMap(p->{
 			return tprepo.save(transactionPerson);
 		});
+		
 	}
 
 	@Override
